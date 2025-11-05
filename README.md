@@ -1,3 +1,4 @@
-# NoSQL-project---To-Do-List
-NOSQL project on the topic of simple to do list webapp 
+# NoSQL-project-To-Do-List
+NOSQL project on the topic of simple to do list webapp
+
 You can access my project files from this repository the report of the project along with steps to implement will be shared soon...
