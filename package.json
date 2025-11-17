@@ -1,0 +1,13 @@
+{
+  "name": "sparktask-pro",
+  "version": "1.0.0",
+  "description": "Beautiful Todo App with Landing Page",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

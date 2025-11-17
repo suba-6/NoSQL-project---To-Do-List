@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SparkTask Pro - Your Tasks</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --accent: #4ECDC4;
+            --danger: #FF6B6B;
+            --success: #51cf66;
+            --warning: #FFD93D;
+            --dark: #2d3748;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* Header & User Menu */
+        .user-menu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            color: var(--gray);
+            font-size: 0.9em;
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #e55a5a;
+            transform: translateY(-2px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .welcome-message {
+            color: var(--gray);
+            font-size: 1.1em;
+        }
+
+        /* Stats Cards */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* Add Todo Form */
+        .add-todo {
+            background: var(--light);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--accent);
+        }
+
+        .add-todo h3 {
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.9em;
+        }
+
+        input, select, button {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .add-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .add-btn:hover {
+            background: #3bb5ac;
+            transform: translateY(-2px);
+        }
+
+        /* Filter Section */
+        .filter-section {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .filter-btn {
+            background: var(--light);
+            border: 2px solid #e2e8f0;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .filter-btn:hover:not(.active) {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Todo Items */
+        .todo-item {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 12px;
+            border-left: 5px solid var(--accent);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .todo-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .todo-item.high { border-left-color: var(--danger); }
+        .todo-item.medium { border-left-color: var(--warning); }
+        .todo-item.low { border-left-color: var(--accent); }
+
+        .todo-item.completed {
+            background: #f0f8f0;
+            opacity: 0.8;
+        }
+
+        .todo-main {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: var(--gray);
+        }
+
+        .todo-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            font-size: 0.8em;
+            color: var(--gray);
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .category-badge {
+            background: var(--primary);
+            color: white;
+        }
+
+        .priority-badge.high { background: var(--danger); color: white; }
+        .priority-badge.medium { background: var(--warning); color: var(--dark); }
+        .priority-badge.low { background: var(--accent); color: white; }
+
+        .todo-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #e55a5a;
+            transform: translateY(-1px);
+        }
+
+        .edit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .edit-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-1px);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Utility Classes */
+        .due-date { color: var(--danger); font-weight: bold; }
+        .created-time { color: var(--gray); }
+        .overdue { color: var(--danger); font-weight: bold; }
+
+        /* Raw Data Section */
+        .raw-data-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .raw-data-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .raw-data-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .raw-data-content {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .raw-data-content pre {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            overflow: auto;
+            max-height: 300px;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- User Menu -->
+        <div class="user-menu">
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="currentUsername">User</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+        
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-tasks"></i> SparkTask Pro</h1>
+            <div class="welcome-message" id="welcomeMessage">
+                Welcome to your productivity hub!
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalTasks">0</div>
+                <div>Total Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedTasks">0</div>
+                <div>Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingTasks">0</div>
+                <div>Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="overdueTasks">0</div>
+                <div>Overdue</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <button class="filter-btn active" onclick="filterTodos('all')">
+                <i class="fas fa-list"></i> All Tasks
+            </button>
+            <button class="filter-btn" onclick="filterTodos('pending')">
+                <i class="fas fa-clock"></i> Pending
+            </button>
+            <button class="filter-btn" onclick="filterTodos('completed')">
+                <i class="fas fa-check-circle"></i> Completed
+            </button>
+            <button class="filter-btn" onclick="filterTodos('overdue')">
+                <i class="fas fa-exclamation-triangle"></i> Overdue
+            </button>
+        </div>
+
+        <!-- Add Todo Form -->
+        <div class="add-todo">
+            <h3><i class="fas fa-plus-circle"></i> Add New Task</h3>
+            <form id="addTodoForm" class="form-grid">
+                <div class="form-group">
+                    <label for="taskInput">Task Description</label>
+                    <input type="text" id="taskInput" placeholder="What needs to be done?" required>
+                </div>
+                <div class="form-group">
+                    <label for="prioritySelect">Priority</label>
+                    <select id="prioritySelect">
+                        <option value="low">📊 Low Priority</option>
+                        <option value="medium" selected>📈 Medium Priority</option>
+                        <option value="high">🚨 High Priority</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="categorySelect">Category</label>
+                    <select id="categorySelect">
+                        <option value="work">💼 Work</option>
+                        <option value="personal" selected>👤 Personal</option>
+                        <option value="shopping">🛒 Shopping</option>
+                        <option value="health">🏥 Health</option>
+                        <option value="study">📚 Study</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dueDate">Due Date</label>
+                    <input type="date" id="dueDate">
+                </div>
+                <button type="submit" class="add-btn">
+                    <i class="fas fa-plus"></i> Add Task
+                </button>
+            </form>
+        </div>
+
+        <!-- Todos List -->
+        <div id="todosList"></div>
+
+        <!-- Empty State -->
+        <div id="emptyMessage" class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>No tasks yet!</h3>
+            <p>Add your first task above to get started on your productivity journey</p>
+        </div>
+
+        <!-- Raw Data Section -->
+        <div class="raw-data-section">
+            <button class="raw-data-btn" onclick="toggleRawData()">
+                <i class="fas fa-database"></i> View Raw Data
+            </button>
+            <div class="raw-data-content" id="rawDataContent">
+                <pre id="rawData"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Authentication check
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'index.html';
+        }
+
+        // Get current user
+        const currentUsername = localStorage.getItem('username') || 'User';
+        const currentUserName = localStorage.getItem('userName') || currentUsername;
+        
+        // Display user info
+        document.getElementById('currentUsername').textContent = currentUsername;
+        document.getElementById('welcomeMessage').textContent = `Welcome back, ${currentUserName}! Ready to be productive?`;
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('username');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            window.location.href = 'index.html';
+        }
+
+        let currentFilter = 'all';
+        let allTodos = [];
+
+        // User-specific data key
+        const getUserTodosKey = () => `todos_${currentUsername}`;
+
+        // Load todos from localStorage
+        function loadTodos() {
+            try {
+                const userTodosKey = getUserTodosKey();
+                const savedTodos = localStorage.getItem(userTodosKey);
+                
+                if (savedTodos) {
+                    allTodos = JSON.parse(savedTodos);
+                } else {
+                    allTodos = [];
+                    // Add sample tasks for new users
+                    if (allTodos.length === 0) {
+                        allTodos = [
+                            {
+                                id: '1',
+                                task: 'Welcome to SparkTask Pro! 🎉',
+                                priority: 'high',
+                                category: 'personal',
+                                completed: false,
+                                due_date: new Date().toISOString().split('T')[0],
+                                created_at: new Date().toISOString(),
+                                user: currentUsername
+                            },
+                            {
+                                id: '2',
+                                task: 'Add your own tasks using the form above ✨',
+                                priority: 'medium',
+                                category: 'work',
+                                completed: false,
+                                due_date: null,
+                                created_at: new Date().toISOString(),
+                                user: currentUsername
+                            },
+                            {
+                                id: '3',
+                                task: 'Click on tasks to mark them as completed ✅',
+                                priority: 'low',
+                                category: 'personal',
+                                completed: true,
+                                due_date: null,
+                                created_at: new Date().toISOString(),
+                                user: currentUsername
+                            }
+                        ];
+                        saveTodos();
+                    }
+                }
+                
+                updateStats(allTodos);
+                const filteredTodos = filterTodosByType(allTodos, currentFilter);
+                displayTodos(filteredTodos);
+            } catch (error) {
+                console.error('Error loading todos:', error);
+                allTodos = [];
+                updateStats(allTodos);
+                displayTodos([]);
+            }
+        }
+
+        function saveTodos() {
+            try {
+                const userTodosKey = getUserTodosKey();
+                localStorage.setItem(userTodosKey, JSON.stringify(allTodos));
+            } catch (error) {
+                console.error('Error saving todos:', error);
+            }
+        }
+
+        function updateStats(todos) {
+            const total = todos.length;
+            const completed = todos.filter(todo => todo.completed).length;
+            const pending = total - completed;
+            const today = new Date().toISOString().split('T')[0];
+            const overdue = todos.filter(todo => !todo.completed && todo.due_date && todo.due_date < today).length;
+            
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('completedTasks').textContent = completed;
+            document.getElementById('pendingTasks').textContent = pending;
+            document.getElementById('overdueTasks').textContent = overdue;
+        }
+
+        function displayTodos(todos) {
+            const todosList = document.getElementById('todosList');
+            const emptyMessage = document.getElementById('emptyMessage');
+            
+            if (todos.length === 0) {
+                todosList.innerHTML = '';
+                
+                let message = 'No tasks yet!';
+                let description = 'Add your first task above to get started';
+                
+                if (currentFilter === 'pending') {
+                    message = 'No pending tasks!';
+                    description = 'All tasks are completed or try changing the filter';
+                } else if (currentFilter === 'completed') {
+                    message = 'No completed tasks!';
+                    description = 'Complete some tasks to see them here';
+                } else if (currentFilter === 'overdue') {
+                    message = 'No overdue tasks!';
+                    description = 'Great job keeping up with your deadlines!';
+                }
+                
+                emptyMessage.innerHTML = `
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>${message}</h3>
+                    <p>${description}</p>
+                `;
+                emptyMessage.style.display = 'block';
+                return;
+            }
+            
+            emptyMessage.style.display = 'none';
+            todosList.innerHTML = todos.map(todo => {
+                const created = new Date(todo.created_at).toLocaleDateString();
+                const dueDate = todo.due_date ? new Date(todo.due_date).toLocaleDateString() : null;
+                const today = new Date().toISOString().split('T')[0];
+                const isOverdue = !todo.completed && todo.due_date && todo.due_date < today;
+                
+                return `
+                <div class="todo-item ${todo.priority} ${todo.completed ? 'completed' : ''}">
+                    <div class="todo-main">
+                        <input type="checkbox" ${todo.completed ? 'checked' : ''} 
+                               onchange="toggleTodo('${todo.id}', this.checked)"
+                               style="width: 18px; height: 18px; margin-top: 2px; cursor: pointer;">
+                        <div style="flex: 1;">
+                            <div class="todo-text">${todo.task}</div>
+                            <div class="todo-meta">
+                                <span class="badge category-badge">${getCategoryIcon(todo.category)} ${todo.category}</span>
+                                <span class="badge priority-badge ${todo.priority}">${getPriorityIcon(todo.priority)} ${todo.priority}</span>
+                                ${dueDate ? `<span class="due-date ${isOverdue ? 'overdue' : ''}">📅 ${dueDate} ${isOverdue ? '⚠️' : ''}</span>` : ''}
+                                <span class="created-time">⏰ ${created}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="todo-actions">
+                        <button class="edit-btn" onclick="editTodo('${todo.id}')">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="delete-btn" onclick="deleteTodo('${todo.id}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function filterTodos(type) {
+            currentFilter = type;
+            
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            const filteredTodos = filterTodosByType(allTodos, type);
+            displayTodos(filteredTodos);
+        }
+
+        function filterTodosByType(todos, type) {
+            const today = new Date().toISOString().split('T')[0];
+            
+            switch(type) {
+                case 'pending':
+                    return todos.filter(todo => !todo.completed);
+                case 'completed':
+                    return todos.filter(todo => todo.completed);
+                case 'overdue':
+                    return todos.filter(todo => !todo.completed && todo.due_date && todo.due_date < today);
+                default:
+                    return todos;
+            }
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'work': '💼',
+                'personal': '👤',
+                'shopping': '🛒',
+                'health': '🏥',
+                'study': '📚'
+            };
+            return icons[category] || '📝';
+        }
+
+        function getPriorityIcon(priority) {
+            const icons = {
+                'high': '🚨',
+                'medium': '📈',
+                'low': '📊'
+            };
+            return icons[priority] || '📌';
+        }
+
+        // Form submission
+        document.getElementById('addTodoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const taskInput = document.getElementById('taskInput');
+            const task = taskInput.value.trim();
+            
+            if (!task) return;
+            
+            const priority = document.getElementById('prioritySelect').value;
+            const category = document.getElementById('categorySelect').value;
+            const due_date = document.getElementById('dueDate').value || null;
+            
+            // Add new todo
+            const newTodo = {
+                id: Date.now().toString(),
+                task: task,
+                priority: priority,
+                category: category,
+                completed: false,
+                due_date: due_date,
+                created_at: new Date().toISOString(),
+                user: currentUsername
+            };
+            
+            allTodos.push(newTodo);
+            saveTodos();
+            updateStats(allTodos);
+            displayTodos(filterTodosByType(allTodos, currentFilter));
+            
+            // Reset form
+            taskInput.value = '';
+            document.getElementById('dueDate').value = '';
+        });
+
+        function toggleTodo(id, completed) {
+            const todo = allTodos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = completed;
+                saveTodos();
+                updateStats(allTodos);
+                displayTodos(filterTodosByType(allTodos, currentFilter));
+            }
+        }
+
+        function editTodo(id) {
+            const todo = allTodos.find(t => t.id === id);
+            const newTask = prompt('Edit your task:', todo.task);
+            if (newTask && newTask.trim()) {
+                todo.task = newTask.trim();
+                saveTodos();
+                updateStats(allTodos);
+                displayTodos(filterTodosByType(allTodos, currentFilter));
+            }
+        }
+
+        function deleteTodo(id) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+            allTodos = allTodos.filter(t => t.id !== id);
+            saveTodos();
+            updateStats(allTodos);
+            displayTodos(filterTodosByType(allTodos, currentFilter));
+        }
+
+        function toggleRawData() {
+            const rawDataContent = document.getElementById('rawDataContent');
+            const rawData = document.getElementById('rawData');
+            
+            if (rawDataContent.style.display === 'block') {
+                rawDataContent.style.display = 'none';
+            } else {
+                rawData.textContent = JSON.stringify(allTodos, null, 2);
+                rawDataContent.style.display = 'block';
+            }
+        }
+
+        // Load user's todos on start
+        loadTodos();
+    </script>
+</body>
+</html>
